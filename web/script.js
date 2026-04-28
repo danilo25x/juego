@@ -1457,7 +1457,7 @@ let functionZones = {
 };
 
 // ===================== EDITOR CONFIG =====================
-const EDITOR_MODE = true; // Set false when done editing
+const EDITOR_MODE = false; // Set false when done editing
 
 // ===================== INPUTS =====================
 const keys = {};
