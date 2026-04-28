@@ -1,0 +1,90 @@
+import cv2
+import numpy as np
+
+data = {
+    "layerCollisions": {
+        "1": [
+            { "x": 0, "y": 0, "w": 1200, "h": 80 },
+            { "x": 0, "y": 0, "w": 125, "h": 1200 },
+            { "x": 990, "y": 0, "w": 210, "h": 1200 },
+            { "x": 0, "y": 1040, "w": 1200, "h": 160 },
+            
+            { "x": 216, "y": 220, "w": 680, "h": 220 },
+            { "x": 216, "y": 520, "w": 680, "h": 180 },
+            { "x": 216, "y": 816, "w": 680, "h": 200 },
+            
+            { "x": 235, "y": 700, "w": 80, "h": 40 },
+            { "x": 795, "y": 160, "w": 75, "h": 35 }
+        ],
+        "2": [
+            { "x": 0, "y": 0, "w": 1200, "h": 125 },
+            { "x": 125, "y": 125, "w": 80, "h": 155 },
+            { "x": 900, "y": 125, "w": 90, "h": 155 },
+            
+            { "x": 0, "y": 0, "w": 155, "h": 1200 },
+            { "x": 960, "y": 0, "w": 300, "h": 1200 },
+            
+            { "x": 216, "y": 700, "w": 680, "h": 350 },
+            { "x": 125, "y": 816, "w": 80, "h": 300 },
+            { "x": 900, "y": 816, "w": 90, "h": 300 },
+            
+            { "x": 420, "y": 125, "w": 275, "h": 80 },
+
+            { "x": 216, "y": 440, "w": 300, "h": 80 },
+            { "x": 595, "y": 440, "w": 305, "h": 80 },
+
+            { "x": 330, "y": 550, "w": 60, "h": 40 },
+            { "x": 500, "y": 630, "w": 60, "h": 40 },
+            { "x": 735, "y": 585, "w": 60, "h": 40 },
+            { "x": 330, "y": 250, "w": 60, "h": 40 },
+            { "x": 670, "y": 215, "w": 60, "h": 40 }
+        ],
+        "3": [
+            { "x": 0, "y": 0, "w": 1200, "h": 50 },
+            { "x": 0, "y": 0, "w": 420, "h": 1200 },
+            { "x": 695, "y": 0, "w": 600, "h": 1200 },
+            { "x": 0, "y": 290, "w": 1200, "h": 1000 },
+            
+            { "x": 520, "y": 100, "w": 70, "h": 50 },
+            { "x": 445, "y": 170, "w": 40, "h": 30 },
+            { "x": 630, "y": 170, "w": 40, "h": 30 }
+        ]
+    },
+    "stairTriggers": [
+        { "x": 155, "y": 440, "w": 60, "h": 80, "fromLayer": 2, "toLayer": 1 },
+        { "x": 155, "y": 440, "w": 60, "h": 80, "fromLayer": 1, "toLayer": 2 },
+        { "x": 900, "y": 420, "w": 60, "h": 85, "fromLayer": 2, "toLayer": 1 },
+        { "x": 900, "y": 420, "w": 60, "h": 85, "fromLayer": 1, "toLayer": 2 },
+        { "x": 516, "y": 200, "w": 80, "h": 100, "fromLayer": 2, "toLayer": 3 },
+        { "x": 516, "y": 200, "w": 80, "h": 100, "fromLayer": 3, "toLayer": 2 },
+        { "x": 155, "y": 725, "w": 60, "h": 90, "fromLayer": 1, "toLayer": 2 },
+        { "x": 155, "y": 725, "w": 60, "h": 90, "fromLayer": 2, "toLayer": 1 },
+        { "x": 900, "y": 720, "w": 60, "h": 90, "fromLayer": 1, "toLayer": 2 },
+        { "x": 900, "y": 720, "w": 60, "h": 90, "fromLayer": 2, "toLayer": 1 }
+    ]
+}
+
+img = cv2.imread('C:/Users/danil/Desktop/infiernos/mapalimbo/extracted/Scene Overview.png')
+
+colors = {
+    "1": (0, 0, 255),    # Red for Layer 1
+    "2": (0, 255, 0),    # Green for Layer 2
+    "3": (255, 0, 0),    # Blue for Layer 3
+}
+
+# Draw Layer Solids
+for layer, rects in data['layerCollisions'].items():
+    color = colors.get(str(layer), (255, 255, 255))
+    for r in rects:
+        x, y, w, h = r['x'], r['y'], r['w'], r['h']
+        cv2.rectangle(img, (x, y), (x+w, y+h), color, 2)
+        cv2.putText(img, f"L{layer}", (x+2, y+15), cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
+
+# Draw Triggers (Yellow)
+for t in data['stairTriggers']:
+    x, y, w, h = t['x'], t['y'], t['w'], t['h']
+    cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 255), 2)
+    cv2.putText(img, f"{t['fromLayer']}->{t['toLayer']}", (x+2, y+15), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 255), 1)
+
+cv2.imwrite('C:/Users/danil/Desktop/infiernos/mapalimbo/debug_map.png', img)
+print("debug_map.png generated!")

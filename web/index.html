@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Art Top Down - Web</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas" width="1280" height="720"></canvas>
+        <div id="ui-layer">
+            <div id="controls-hint">
+                <div class="keys">
+                    <span class="key">W</span>
+                    <div class="row">
+                        <span class="key">A</span>
+                        <span class="key">S</span>
+                        <span class="key">D</span>
+                    </div>
+                </div>
+                <div class="hint-text">MOVE</div>
+            </div>
+            <button id="reset-button">RESET</button>
+        </div>
+    </div>
+
+    <!-- Exercise Overlay (funciones 2,3,4) -->
+    <div id="exercise-overlay" style="display:none;">
+        <div id="exercise-backdrop"></div>
+        <div id="exercise-panel">
+            <div id="exercise-content-area">
+                <div id="exercise-header">Selecciona un ejercicio para resolver</div>
+                <div id="exercise-list"></div>
+                <div id="exercise-active" style="display:none;">
+                    <div id="exercise-question"></div>
+                    <div id="exercise-input-row">
+                        <input type="text" id="exercise-answer" placeholder="Escribe tu respuesta..."
+                            autocomplete="off" />
+                        <button id="exercise-submit">✓</button>
+                    </div>
+                    <div id="exercise-feedback"></div>
+                    <button id="exercise-back">← Volver a ejercicios</button>
+                </div>
+                <button id="exercise-close">Presiona E para cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Función 6 Exercise Overlay (Fracciones) -->
+    <div id="exercise6-overlay" style="display:none;">
+        <div id="exercise6-panel">
+            <div id="ex6-header">
+                <span>⚗️ Fracciones Algebraicas</span>
+                <button id="ex6-close">✕ Cerrar</button>
+            </div>
+            <!-- List view -->
+            <div id="ex6-list-view">
+                <div id="ex6-categories"></div>
+            </div>
+            <!-- Active exercise view -->
+            <div id="ex6-active-view" style="display:none;">
+                <div id="ex6-question"></div>
+                <div id="ex6-input-row">
+                    <input type="text" id="ex6-answer" placeholder="Tu respuesta..." autocomplete="off" />
+                    <button id="ex6-submit">✓</button>
+                </div>
+                <div id="ex6-feedback"></div>
+                <button id="ex6-back">← Volver</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Credits Overlay -->
+    <div id="credits-overlay" style="display:none;">
+        <div id="credits-inner"></div>
+        <button id="credits-return-btn" onclick="returnToLimbo()">🏠 Volver al Limbo</button>
+    </div>
+
+    <script>localStorage.clear(); console.log('localStorage cleared!');</script>
+    <script src="script.js?v=4000"></script>
+</body>
+
+</html>
