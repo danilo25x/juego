@@ -3,7 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Pixel Art Top Down - Web</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -13,7 +16,7 @@
         <canvas id="game-canvas" width="1280" height="720"></canvas>
         <div id="ui-layer">
             <div id="controls-hint">
-                <div class="keys">
+                <div class="keys desktop-only">
                     <span class="key">W</span>
                     <div class="row">
                         <span class="key">A</span>
@@ -21,9 +24,23 @@
                         <span class="key">D</span>
                     </div>
                 </div>
-                <div class="hint-text">MOVE</div>
+                <div class="hint-text desktop-only">MOVE</div>
             </div>
             <button id="reset-button">RESET</button>
+        </div>
+    </div>
+
+    <!-- Mobile Virtual Controls -->
+    <div id="mobile-controls">
+        <!-- Virtual Joystick (left) -->
+        <div id="joystick-zone">
+            <div id="joystick-base">
+                <div id="joystick-knob"></div>
+            </div>
+        </div>
+        <!-- Action buttons (right) -->
+        <div id="action-buttons">
+            <button id="btn-e" class="action-btn">E</button>
         </div>
     </div>
 
@@ -37,14 +54,14 @@
                 <div id="exercise-active" style="display:none;">
                     <div id="exercise-question"></div>
                     <div id="exercise-input-row">
-                        <input type="text" id="exercise-answer" placeholder="Escribe tu respuesta..."
-                            autocomplete="off" />
+                        <input type="text" id="exercise-answer" placeholder="Escribe tu respuesta..." autocomplete="off"
+                            inputmode="text" />
                         <button id="exercise-submit">✓</button>
                     </div>
                     <div id="exercise-feedback"></div>
                     <button id="exercise-back">← Volver a ejercicios</button>
                 </div>
-                <button id="exercise-close">Presiona E para cerrar</button>
+                <button id="exercise-close">Toca para cerrar</button>
             </div>
         </div>
     </div>
@@ -64,7 +81,8 @@
             <div id="ex6-active-view" style="display:none;">
                 <div id="ex6-question"></div>
                 <div id="ex6-input-row">
-                    <input type="text" id="ex6-answer" placeholder="Tu respuesta..." autocomplete="off" />
+                    <input type="text" id="ex6-answer" placeholder="Tu respuesta..." autocomplete="off"
+                        inputmode="text" />
                     <button id="ex6-submit">✓</button>
                 </div>
                 <div id="ex6-feedback"></div>
@@ -80,7 +98,7 @@
     </div>
 
     <script>localStorage.clear(); console.log('localStorage cleared!');</script>
-    <script src="script.js?v=4000"></script>
+    <script src="script.js?v=4001"></script>
 </body>
 
 </html>

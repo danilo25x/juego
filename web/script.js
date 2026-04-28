@@ -8,6 +8,23 @@ const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 const resetButton = document.getElementById('reset-button');
 
+// ===================== MOBILE DETECTION & CANVAS RESIZE =====================
+const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+function resizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+// Also listen to orientationchange for mobile
+window.addEventListener('orientationchange', () => { setTimeout(resizeCanvas, 150); });
+
 // ===================== ASSETS =====================
 const sceneImg = new Image();
 const infernoImg = new Image();
@@ -1812,6 +1829,136 @@ function init() {
         el.addEventListener('mouseleave', () => keys[map[el.innerText]] = false);
     });
     resetButton.addEventListener('click', () => { player.x = 550; player.y = 350; player.layer = 2; });
+
+    // ===================== MOBILE CONTROLS SETUP =====================
+    if (isMobile) {
+        const mobileControls = document.getElementById('mobile-controls');
+        mobileControls.classList.add('visible');
+
+        // --- Floating Joystick (appears at touch location) ---
+        const joystickZone = document.getElementById('joystick-zone');
+        const joystickBase = document.getElementById('joystick-base');
+        const joystickKnob = document.getElementById('joystick-knob');
+        let joystickTouchId = null;
+        let jsCenterX = 0, jsCenterY = 0; // center of joystick base in page coords
+        const jsMaxDist = 45; // max knob travel from center
+        const jsDeadZone = 6;
+
+        function moveJoystick(touchX, touchY) {
+            let dx = touchX - jsCenterX;
+            let dy = touchY - jsCenterY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist > jsMaxDist) {
+                dx = (dx / dist) * jsMaxDist;
+                dy = (dy / dist) * jsMaxDist;
+            }
+
+            // Move knob relative to base center (base is already centered via CSS transform)
+            joystickKnob.style.left = (55 + dx - 23) + 'px'; // 55 = base half, 23 = knob half
+            joystickKnob.style.top = (55 + dy - 23) + 'px';
+
+            // Set movement keys
+            keys['w'] = dy < -jsDeadZone;
+            keys['s'] = dy > jsDeadZone;
+            keys['a'] = dx < -jsDeadZone;
+            keys['d'] = dx > jsDeadZone;
+        }
+
+        function hideJoystick() {
+            joystickBase.classList.remove('active');
+            joystickKnob.style.left = '50%';
+            joystickKnob.style.top = '50%';
+            joystickKnob.style.transform = 'translate(-50%, -50%)';
+            keys['w'] = false;
+            keys['s'] = false;
+            keys['a'] = false;
+            keys['d'] = false;
+        }
+
+        joystickZone.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (joystickTouchId !== null) return;
+            const t = e.changedTouches[0];
+            joystickTouchId = t.identifier;
+
+            // Position the base at the touch point
+            jsCenterX = t.clientX;
+            jsCenterY = t.clientY;
+            joystickBase.style.left = t.clientX + 'px';
+            joystickBase.style.top = t.clientY + 'px';
+            joystickBase.classList.add('active');
+
+            // Reset knob to center (using px positioning now)
+            joystickKnob.style.transform = 'none';
+            joystickKnob.style.left = (55 - 23) + 'px';
+            joystickKnob.style.top = (55 - 23) + 'px';
+        }, { passive: false });
+
+        joystickZone.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            for (const t of e.changedTouches) {
+                if (t.identifier === joystickTouchId) {
+                    moveJoystick(t.clientX, t.clientY);
+                    break;
+                }
+            }
+        }, { passive: false });
+
+        const onJoystickEnd = (e) => {
+            for (const t of e.changedTouches) {
+                if (t.identifier === joystickTouchId) {
+                    joystickTouchId = null;
+                    hideJoystick();
+                    break;
+                }
+            }
+        };
+        joystickZone.addEventListener('touchend', onJoystickEnd);
+        joystickZone.addEventListener('touchcancel', onJoystickEnd);
+
+        // --- Action Button E ---
+        const btnE = document.getElementById('btn-e');
+        btnE.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            btnE.classList.add('pressed');
+            const ev = new KeyboardEvent('keydown', { key: 'e', bubbles: true });
+            document.dispatchEvent(ev);
+        }, { passive: false });
+
+        btnE.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            btnE.classList.remove('pressed');
+            const ev = new KeyboardEvent('keyup', { key: 'e', bubbles: true });
+            document.dispatchEvent(ev);
+        }, { passive: false });
+
+        // --- Prevent scroll/zoom on canvas touch ---
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); }, { passive: false });
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); }, { passive: false });
+
+        // Handle tap on canvas for video thumbnail click
+        canvas.addEventListener('touchend', (e) => {
+            if (!functionOverlay.active || functionOverlay.phase !== 'showing') return;
+            const t = e.changedTouches[0];
+            const rect = canvas.getBoundingClientRect();
+            const clickX = t.clientX - rect.left;
+            const clickY = t.clientY - rect.top;
+            for (const tr of thumbnailRects) {
+                if (clickX >= tr.x && clickX <= tr.x + tr.w && clickY >= tr.y && clickY <= tr.y + tr.h) {
+                    window.open(`https://www.youtube.com/watch?v=${tr.videoId}`, '_blank');
+                    return;
+                }
+            }
+        });
+
+        // Prevent pull-to-refresh and pinch zoom on the whole page
+        document.body.addEventListener('touchmove', (e) => {
+            // Allow scroll inside exercise overlays
+            if (e.target.closest('#exercise-content-area') || e.target.closest('#ex6-list-view') || e.target.closest('#credits-inner')) return;
+            e.preventDefault();
+        }, { passive: false });
+    }
 }
 
 // ===================== PORTAL LOGIC =====================
@@ -1909,7 +2056,7 @@ function drawFunctionOverlay() {
         ctx.fillText('(Sin implementar aún)', canvas.width / 2, canvas.height / 2 + 15);
         ctx.font = '12px monospace';
         ctx.fillStyle = `rgba(180, 180, 180, ${a})`;
-        ctx.fillText('Presiona E para cerrar', canvas.width / 2, canvas.height / 2 + 45);
+        ctx.fillText(isMobile ? 'Toca E para cerrar' : 'Presiona E para cerrar', canvas.width / 2, canvas.height / 2 + 45);
         ctx.textAlign = 'left';
     }
 }
@@ -2059,7 +2206,7 @@ function drawFunction1(a) {
     ctx.fillStyle = `rgba(150, 150, 150, ${a * (0.5 + Math.sin(Date.now() / 500) * 0.3)})`;
     ctx.font = '10px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('Presiona E para cerrar', cx, canvas.height - 30);
+    ctx.fillText(isMobile ? 'Toca E para cerrar' : 'Presiona E para cerrar', cx, canvas.height - 30);
     ctx.textAlign = 'left';
 }
 
@@ -2285,7 +2432,7 @@ function draw() {
                 ctx.fillStyle = `rgba(255, 255, 255, ${textFade})`;
                 ctx.font = 'bold 8px monospace';
                 ctx.textAlign = 'center';
-                ctx.fillText('Presiona E', p.x + p.w / 2, p.y - 5);
+                ctx.fillText(isMobile ? 'Toca E' : 'Presiona E', p.x + p.w / 2, p.y - 5);
                 ctx.textAlign = 'left';
             }
         }
@@ -2324,7 +2471,7 @@ function draw() {
                 ctx.fillStyle = `rgba(170, 221, 255, ${textFade})`;
                 ctx.font = 'bold 8px monospace';
                 ctx.textAlign = 'center';
-                ctx.fillText('Presiona E', fz.x + fz.w / 2, fz.y - 5);
+                ctx.fillText(isMobile ? 'Toca E' : 'Presiona E', fz.x + fz.w / 2, fz.y - 5);
                 ctx.textAlign = 'left';
             }
         }
